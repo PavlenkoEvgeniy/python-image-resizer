@@ -17,7 +17,7 @@ A powerful and intuitive desktop application for batch resizing images with drag
 - **About Dialog** - Version and author information
 
 ## Preview
-![Главное окно программы](screenshot.png)
+<img src="screenshot.png" alt="Login page" height="500">
 
 ## Installation
 
