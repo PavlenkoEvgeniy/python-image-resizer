@@ -17,7 +17,7 @@ A powerful and intuitive desktop application for batch resizing images with drag
 - **About Dialog** - Version and author information
 
 ## Preview
-<img src="screenshot.png" alt="Login page" height="500">
+<img src="screenshot.png" alt="Image Resizer Pro" height="500">
 
 ## Installation
 
@@ -33,7 +33,14 @@ git clone https://github.com/EvgeniyPavlenko85/image-resizer-pro.git
 cd image-resizer-pro
 ```
 
-2. Install required dependencies:
+2. Create a virtual environment (recommended):
+```bash
+python3 -m venv venv
+source venv/bin/activate  # Linux/macOS
+# venv\Scripts\activate  # Windows
+```
+
+3. Install required dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -121,14 +128,20 @@ pyinstaller --onefile --windowed  --name ImageResizer main.py
 make pyinstaller
 ```
 
+Or run PyInstaller directly:
+```bash
+pyinstaller --onefile --windowed --name ImageResizer main.py
+```
+
 ## File Structure
 
 ```
 image-resizer-pro/
-├── image_resizer.py     # Main application file
-├── build.py             # Build script for executable
+├── main.py              # Main application file
+├── Makefile             # Build script for PyInstaller
 ├── requirements.txt     # Python dependencies
 ├── README.md            # This documentation
+├── LICENSE.md           # License file
 ├── screenshot.png       # Application screenshot
 └── resized_images/      # Default output directory
 ```
