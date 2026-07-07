@@ -22,7 +22,7 @@ A powerful and intuitive desktop application for batch resizing images with drag
 ## 📥 Installation
 
 ### ✅ Prerequisites
-- Python 3.6 or higher
+- Python 3.9 or higher
 - Required Python packages
 
 ### 📦 Install from Source
@@ -119,7 +119,7 @@ pip install pyinstaller
 
 2. Build the executable:
 ```bash
-pyinstaller --onefile --windowed  --name ImageResizer main.py
+pyinstaller --onefile --windowed --name ImageResizer main.py
 ```
 
 ### 📜 Using the Build Script
@@ -137,14 +137,39 @@ pyinstaller --onefile --windowed --name ImageResizer main.py
 
 ```
 image-resizer-pro/
-├── main.py              # Main application file
-├── Makefile             # Build script for PyInstaller
-├── requirements.txt     # Python dependencies
-├── README.md            # This documentation
-├── LICENSE.md           # License file
-├── screenshot.png       # Application screenshot
-└── resized_images/      # Default output directory
+├── src/image_resizer/           # Package
+│   ├── __init__.py              # Package metadata
+│   ├── config.py                # Configuration
+│   ├── image_processor.py       # Core business logic
+│   ├── dialogs.py                # UI dialogs
+│   └── main_window.py           # Main window UI
+├── tests/                       # Test suite
+│   ├── test_config.py
+│   └── test_image_processor.py
+├── main.py                      # Application entry point
+├── Makefile                     # Build script
+├── pyproject.toml               # Project configuration
+├── requirements.txt             # Python dependencies
+├── README.md                    # This documentation
+├── LICENSE.md                   # License file
+├── screenshot.png               # Application screenshot
+└── resized_images/              # Default output directory
 ```
+
+## 🛠️ Development
+
+### Running Tests
+
+```bash
+PYTHONPATH=src pytest tests/
+```
+
+### Code Structure
+
+The project follows a clean architecture:
+- **Business Logic**: `src/image_resizer/image_processor.py` - handles image resizing
+- **UI Layer**: `src/image_resizer/main_window.py` - Tkinter GUI
+- **Configuration**: `src/image_resizer/config.py` - app settings
 
 ## 🛠️ Troubleshooting
 
@@ -170,7 +195,7 @@ image-resizer-pro/
 **📌 Version:** 1.0.0  
 **📜 License:** Freeware  
 **👤 Author:** Pavlenko Evgeniy  
-**📧 Email:** pavlenkoevgeniy85@gmail.com  
+**📧 Email:** pavlenkoevgeniy85@gmail.com
 
 Copyright © 2026
 
@@ -197,6 +222,7 @@ Feel free to submit issues, feature requests, or pull requests on the GitHub rep
 - Preset resolutions
 - Progress tracking
 - Error handling
+- **Refactored** - Clean package structure with tests
 
 ## 🆘 Support
 
