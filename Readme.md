@@ -223,7 +223,7 @@ The project follows a clean architecture:
 
 ## ℹ️ About
 
-**📌 Version:** 1.0.0  
+**📌 Version:** 1.0.1  
 **📜 License:** Freeware  
 **👤 Author:** Pavlenko Evgeniy  
 **📧 Email:** pavlenkoevgeniy85@gmail.com
@@ -243,6 +243,9 @@ Copyright © 2026
 Feel free to submit issues, feature requests, or pull requests on the GitHub repository.
 
 ## 📜 Changelog
+
+### 📝 Version 1.0.1
+- Version bump
 
 ### 📝 Version 1.0.0
 - Initial release
