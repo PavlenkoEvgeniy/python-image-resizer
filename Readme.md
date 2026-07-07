@@ -156,6 +156,37 @@ image-resizer-pro/
 └── resized_images/              # Default output directory
 ```
 
+## 🔄 CI/CD
+
+### GitHub Actions
+
+This project uses GitHub Actions for continuous integration and automated builds:
+
+- **Automated Testing** - Runs tests on every push and PR
+- **Cross-Platform Builds** - Builds executables for Windows, macOS, and Linux
+- **Auto-Release** - Creates GitHub releases automatically when you push a tag starting with `v` (e.g., `v1.0.0`)
+
+#### Triggering a Release
+
+To create a release:
+
+1. Push a version tag:
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+2. The workflow will build executables for all platforms and create a GitHub release with the artifacts.
+
+#### Workflow Features
+
+| Feature | Description |
+|---------|-------------|
+| Test | Runs pytest on all platforms |
+| Build | Creates standalone .exe/.app binaries |
+| Artifact | Uploads builds for 30 days |
+| Release | Auto-creates GitHub release on tag |
+
 ## 🛠️ Development
 
 ### Running Tests
