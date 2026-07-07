@@ -1,7 +1,8 @@
-altgraph==0.17.5
-packaging==26.2
-pillow==12.2.0
-pyinstaller==6.21.0
-pyinstaller-hooks-contrib==2026.6
-setuptools==82.0.1
-tkinterdnd2==0.5.0
+# Image Resizer Pro - Dependencies
+Pillow>=10.0.0
+tkinterdnd2>=0.3.0
+
+# Development dependencies
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
