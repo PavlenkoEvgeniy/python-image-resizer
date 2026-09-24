@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 from enum import Enum
 
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 class OutputFormat(Enum):
@@ -83,6 +83,11 @@ class ImageProcessor:
 
         Returns:
             ResizeResult indicating success or failure with details.
+
+        The image is always brought to its display orientation (baked into
+        pixels, see ADR-0001), so target dimensions and the dimensions suffix
+        are computed from what the user sees, not raw pixels. Only the ICC
+        profile is carried over to the output; other EXIF metadata is dropped.
         """
         input_path = Path(input_path)
         output_dir = Path(output_dir)
@@ -95,6 +100,9 @@ class ImageProcessor:
 
         try:
             with Image.open(input_path) as img:
+                img = ImageOps.exif_transpose(img)
+                icc_profile = img.info.get("icc_profile")
+
                 if maintain_aspect:
                     new_width, new_height = self._calculate_aspect_ratio(
                         img.width, img.height, target_width, target_height
@@ -115,7 +123,7 @@ class ImageProcessor:
                     add_dimensions_to_filename,
                 )
 
-                self._save_image(resized, output_path)
+                self._save_image(resized, output_path, icc_profile=icc_profile)
 
                 return ResizeResult(success=True, output_path=output_path)
 
@@ -182,12 +190,18 @@ class ImageProcessor:
 
         return output_dir / f"{stem}.{extension}"
 
-    def _save_image(self, img: Image.Image, output_path: Path) -> None:
+    def _save_image(
+        self,
+        img: Image.Image,
+        output_path: Path,
+        icc_profile: Optional[bytes] = None,
+    ) -> None:
         """Save the image with appropriate format handling.
 
         Args:
             img: The PIL Image to save.
             output_path: Path where the image will be saved.
+            icc_profile: ICC profile carried over from the original image.
         """
         save_kwargs = {}
 
@@ -207,5 +221,8 @@ class ImageProcessor:
 
         elif self.output_format == OutputFormat.PNG:
             save_kwargs["optimize"] = True
+
+        if icc_profile:
+            save_kwargs["icc_profile"] = icc_profile
 
         img.save(output_path, format=self.output_format.value, **save_kwargs)
