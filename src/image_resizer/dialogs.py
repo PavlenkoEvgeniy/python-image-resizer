@@ -5,6 +5,7 @@ from tkinter import ttk
 from typing import Optional
 
 from image_resizer import __version__, __author__, __email__
+from image_resizer.window_utils import center_on_parent
 
 
 class AboutDialog:
@@ -18,23 +19,17 @@ class AboutDialog:
         """
         self.window = tk.Toplevel(parent)
         self.window.title("About Image Resizer Pro")
-        self.window.geometry("420x380")
         self.window.resizable(False, False)
         self.window.transient(parent)
+
+        # Build content first, then size the dialog from its real dimensions
+        # and center it on the parent window before it settles.
+        self.window.withdraw()
+        self._create_content()
+        self.window.deiconify()
+        center_on_parent(parent, self.window)
         self.window.grab_set()
         self.window.focus_set()
-
-        # Center dialog on screen
-        self.window.update()
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
-        window_width = 420
-        window_height = 380
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        self.window.geometry(f"{window_width}x{window_height}+{x}+{y}")
-
-        self._create_content()
 
     def _create_content(self) -> None:
         """Create the dialog content."""
