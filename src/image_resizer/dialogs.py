@@ -4,11 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from image_resizer import __version__, __author__, __email__
-from image_resizer.positioning import center_over_parent
-
-# Fixed About dialog size, the single source of truth.
-ABOUT_WIDTH = 420
-ABOUT_HEIGHT = 380
+from image_resizer.window_utils import center_on_parent
 
 
 class AboutDialog:
@@ -25,10 +21,12 @@ class AboutDialog:
         self.window.resizable(False, False)
         self.window.transient(parent)
 
+        # Build content first, then size the dialog from its real dimensions
+        # and center it on the parent window before it settles.
+        self.window.withdraw()
         self._create_content()
-        center_over_parent(self.window, parent, ABOUT_WIDTH, ABOUT_HEIGHT)
-
-        self.window.wait_visibility()
+        self.window.deiconify()
+        center_on_parent(parent, self.window)
         self.window.grab_set()
         self.window.focus_set()
 
