@@ -22,18 +22,82 @@ def centered_origin(
     return x, y
 
 
-def center_on_screen(window: tk.Wm, width: int, height: int) -> None:
-    """Position and size a window centered on the primary screen.
+def choose_monitor(
+    monitors: list[tuple[int, int, int, int]], pointer: tuple[int, int]
+) -> Optional[tuple[int, int, int, int]]:
+    """Pick the monitor that contains the given point.
+
+    Args:
+        monitors: Monitor rectangles as (x, y, width, height).
+        pointer: Global (x, y) point, e.g. the current mouse position.
+
+    Returns:
+        The containing monitor rectangle, or None when the point is
+        outside every monitor (or the list is empty).
+    """
+    px, py = pointer
+    for x, y, width, height in monitors:
+        if x <= px < x + width and y <= py < y + height:
+            return x, y, width, height
+    return None
+
+
+def detect_monitors() -> list[tuple[int, int, int, int]]:
+    """Best-effort monitor detection.
+
+    Returns:
+        Monitor rectangles as (x, y, width, height); empty when
+        monitor detection is unavailable (screeninfo missing, native
+        Wayland, etc.) and callers should fall back to the whole screen.
+    """
+    try:
+        from screeninfo import get_monitors
+
+        return [(m.x, m.y, m.width, m.height) for m in get_monitors()]
+    except Exception:
+        return []
+
+
+def center_on_screen(
+    window: tk.Wm,
+    width: int,
+    height: int,
+    monitors: Optional[list[tuple[int, int, int, int]]] = None,
+) -> None:
+    """Position and size a window centered inside a monitor.
+
+    The window is centered on the monitor that currently holds the mouse
+    pointer, so on multi-monitor setups the window opens where the user
+    is working instead of straddling the seam between monitors (Tk
+    reports all monitors as one combined virtual screen). When monitor
+    detection is unavailable or the pointer is outside every monitor,
+    the window falls back to centering on the whole virtual screen.
 
     Args:
         window: Window to position.
         width: Window width.
         height: Window height.
+        monitors: Monitor rectangles to use instead of detecting them.
     """
-    screen_size = (window.winfo_screenwidth(), window.winfo_screenheight())
-    x, y = centered_origin(screen_size, (width, height))
-    # Never let the window start off-screen.
-    window.geometry(f"{width}x{height}+{max(0, x)}+{max(0, y)}")
+    if monitors is None:
+        monitors = detect_monitors()
+    monitor = choose_monitor(
+        monitors, (window.winfo_pointerx(), window.winfo_pointery())
+    )
+
+    if monitor is not None:
+        mx, my, mw, mh = monitor
+        dx, dy = centered_origin((mw, mh), (width, height))
+        x = mx + max(0, min(dx, max(0, mw - width)))
+        y = my + max(0, min(dy, max(0, mh - height)))
+    else:
+        screen_size = (window.winfo_screenwidth(), window.winfo_screenheight())
+        x, y = centered_origin(screen_size, (width, height))
+        x = max(0, x)
+        y = max(0, y)
+
+    window.geometry(f"{width}x{height}+{x}+{y}")
+    _align_client(window, x, y, width, height)
 
 
 def center_over_parent(
@@ -58,4 +122,27 @@ def center_over_parent(
     w = width if width is not None else window.winfo_reqwidth()
     h = height if height is not None else window.winfo_reqheight()
     x, y = centered_origin((parent.winfo_width(), parent.winfo_height()), (w, h))
-    window.geometry(f"{w}x{h}+{parent.winfo_rootx() + x}+{parent.winfo_rooty() + y}")
+    x += parent.winfo_rootx()
+    y += parent.winfo_rooty()
+    window.geometry(f"{w}x{h}+{x}+{y}")
+    _align_client(window, x, y, w, h)
+
+
+def _align_client(
+    window: tk.Wm, x: int, y: int, width: int, height: int
+) -> None:
+    """Move a mapped window so its client area lands at the requested point.
+
+    Some window managers treat a geometry position as the position of the
+    window frame, shifting the client area down by the title bar height.
+    Measure the actual placement once the window is mapped and re-apply
+    the difference.
+    """
+    window.update()
+    if not window.winfo_ismapped():
+        return
+    error_x = x - window.winfo_rootx()
+    error_y = y - window.winfo_rooty()
+    if error_x or error_y:
+        window.geometry(f"{width}x{height}+{x + error_x}+{y + error_y}")
+        window.update()
