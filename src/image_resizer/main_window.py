@@ -11,6 +11,11 @@ from typing import Callable, Optional
 from image_resizer.config import AppConfig
 from image_resizer.dialogs import AboutDialog, ErrorDialog
 from image_resizer.image_processor import ImageProcessor, OutputFormat
+from image_resizer.positioning import center_on_screen
+
+# Fixed main window size, the single source of truth.
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 650
 
 
 class ImageResizerWindow:
@@ -34,43 +39,24 @@ class ImageResizerWindow:
 
         self._setup_window()
         self._create_widgets()
-        self._center_window()
+        self._center_on_screen()
         self._start_queue_processor()
-
-    def _center_window(self) -> None:
-        """Center window on screen after all widgets are created."""
-        self.root.update()
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        window_width = 800
-        window_height = 650
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
     def _setup_window(self) -> None:
         """Configure the main window."""
         self.root.title("Image Resizer Pro")
-        self.root.geometry("800x650")
-        
-        # Withdraw window, center it, then show - ensures correct position
+        # Keep the window hidden until it is positioned, so it never
+        # appears at the wrong place and jumps to the center.
         self.root.withdraw()
-        self.root.update()
-
-        # Center window on screen
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        window_width = 800
-        window_height = 650
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-        
-        self.root.deiconify()
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+
+    def _center_on_screen(self) -> None:
+        """Center the window on the primary screen and show it."""
+        center_on_screen(self.root, WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.root.deiconify()
 
     def _create_widgets(self) -> None:
         """Create all UI widgets."""
@@ -341,7 +327,9 @@ class ImageResizerWindow:
     def _start_resize(self) -> None:
         """Start the resize process."""
         if not self.image_files:
-            ErrorDialog.show_warning("No Files", "Please add some image files first!")
+            ErrorDialog.show_warning(
+                "No Files", "Please add some image files first!", parent=self.root
+            )
             return
 
         try:
@@ -350,6 +338,7 @@ class ImageResizerWindow:
             ErrorDialog.show_error(
                 "Invalid Input",
                 "Please enter valid positive numbers for width and height",
+                parent=self.root,
             )
             return
 
@@ -420,7 +409,14 @@ class ImageResizerWindow:
                 success += 1
             else:
                 errors.append(result.error)
-                self.resize_queue.put(("error", result.error))
+                # No popup per failure - the status bar keeps the user
+                # informed and a single summary is shown at the end.
+                self.resize_queue.put(
+                    (
+                        "status",
+                        f"Resizing... {i + 1}/{total} ({len(errors)} failed so far)",
+                    )
+                )
 
         # Final status
         if success == total:
@@ -442,12 +438,14 @@ class ImageResizerWindow:
 
                 if msg_type == "status":
                     self.status_var.set(message[1])
-                elif msg_type == "error":
-                    ErrorDialog.show_error("Error", message[1])
                 elif msg_type == "complete":
                     self.resize_btn.config(state="normal")
                     if message[1]:
-                        ErrorDialog.show_info("Complete", "Image resizing completed successfully!")
+                        ErrorDialog.show_info(
+                            "Complete",
+                            "Image resizing completed successfully!",
+                            parent=self.root,
+                        )
                     else:
                         if message[2]:
                             error_summary = "\n".join(message[2][:3])
@@ -456,10 +454,13 @@ class ImageResizerWindow:
                             ErrorDialog.show_warning(
                                 "Completed with Errors",
                                 f"Image resizing completed with errors:\n\n{error_summary}",
+                                parent=self.root,
                             )
                         else:
                             ErrorDialog.show_warning(
-                                "Completed", "Image resizing completed with some issues."
+                                "Completed",
+                                "Image resizing completed with some issues.",
+                                parent=self.root,
                             )
         except queue.Empty:
             pass
