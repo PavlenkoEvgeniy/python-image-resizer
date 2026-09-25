@@ -11,7 +11,11 @@ from typing import Callable, Optional
 from image_resizer.config import AppConfig
 from image_resizer.dialogs import AboutDialog, ErrorDialog
 from image_resizer.image_processor import ImageProcessor, OutputFormat
-from image_resizer.window_utils import center_on_screen
+from image_resizer.positioning import center_on_screen
+
+# Fixed size of the main window.
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 650
 
 
 class ImageResizerWindow:
@@ -38,15 +42,10 @@ class ImageResizerWindow:
         self._center_on_screen()
         self._start_queue_processor()
 
-    def _center_window(self) -> None:
-        """Center window on screen after all widgets are created."""
-        self.root.update()
-        center_on_screen(self.root)
-
     def _setup_window(self) -> None:
         """Configure the main window."""
         self.root.title("Image Resizer Pro")
-        self.root.geometry("800x650")
+        self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
