@@ -1,5 +1,5 @@
 """Image Resizer Pro - A desktop application for batch image resizing."""
 
-__version__ = "1.0.3"
+__version__ = "1.0.5"
 __author__ = "Pavlenko Evgeniy"
 __email__ = "pavlenkoevgeniy85@gmail.com"
